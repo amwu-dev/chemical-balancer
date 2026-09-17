@@ -246,9 +246,14 @@ class Solution:
             return "Too many vectors in the nullspace"
 sol = Solution()
 # Bad
-print(sol.balance('C2H5OH + O2 -> CO2 + H2O'))
+#print(sol.balance('C2H5OH + O2 -> CO2 + H2O'))
 # Good
-print(sol.balance('H2O + O2 -> H2O2'))
-print(sol.balance("C3H8+O2->CO2+H2O"))
+#print(sol.balance('H2O + O2 -> H2O2'))
+#print(sol.balance("C3H8+O2->CO2+H2O"))
 #from organic chemistry tutor
-print(sol.balance("Na3PO4 + CaCl2 -> Ca3(PO4)2 + NaCl"))
+#print(sol.balance("Na3PO4 + CaCl2 -> Ca3(PO4)2 + NaCl"))
+
+print("Hello! Welcome to the chemical equation balancer")
+print("Please input your format in the form: reactant + reactant -> product + product")
+formula = input("Please type your formula here:")
+print(sol.balance(formula))
