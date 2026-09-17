@@ -1,4 +1,10 @@
 import numpy as np 
+from scipy.linalg import null_space
+import sympy as sp
+
+from fractions import Fraction
+from math import gcd
+from functools import reduce
 
 class Solution:
         # we want the counts of all the atoms in a dict
@@ -14,6 +20,67 @@ class Solution:
                 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm',
                 'Yb', 'Lu', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf',
                 'Es', 'Fm', 'Md', 'No', 'Lr')
+
+
+
+    def to_integer_coefficients(self, vector, max_denominator=1000):
+        """
+        Convert a vector of floating-point numbers into the smallest
+        integer ratio by approximating each value as a fraction.
+
+        Example:
+            [0.5, 0.25, 0.75] -> [2, 1, 3]
+
+        Args:
+            vector: Iterable of numbers.
+            max_denominator: Maximum denominator used when approximating
+                            floating-point values as fractions.
+
+        Returns:
+            A list of integers with the same ratio as the input.
+        """
+
+        # Convert decimals to fractions
+        fractions = [
+            Fraction(float(x)).limit_denominator(max_denominator)
+            for x in vector
+        ]
+
+        # Find the least common multiple of all denominators
+        def lcm(a, b):
+            return abs(a * b) // gcd(a, b)
+
+        common_denominator = reduce(
+            lcm,
+            (f.denominator for f in fractions),
+            1
+        )
+
+        # Multiply every fraction by the common denominator
+        integers = [
+            f.numerator * (common_denominator // f.denominator)
+            for f in fractions
+        ]
+
+        # Reduce by the greatest common divisor
+        common_factor = reduce(
+            gcd,
+            (abs(x) for x in integers if x != 0)
+        )
+
+        integers = [
+            x // common_factor
+            for x in integers
+        ]
+
+        # Make the first nonzero coefficient positive
+        for x in integers:
+            if x != 0:
+                if x < 0:
+                    integers = [-x for x in integers]
+                break
+
+        return integers
 
     def multiply(self, d, m):
         for k in d.keys():
@@ -135,9 +202,53 @@ class Solution:
                 m, c = item
                 if element in c:
                     matrix[e][i + len(left_counts)] = -c[element]
-        print(matrix)
-        output = ""
-        return output
+        #matrix = np.array(matrix)
+        # if there are multiple chemical equations in the nullspace, investigate what that means
+        matrix = sp.Matrix(matrix)
+        ns = matrix.nullspace()
+        v = ns[0]
+
+        denominators = [x.q for x in v]
+        common_denominator = sp.ilcm(*denominators)
+
+        coefficients = [
+            int(x * common_denominator)
+            for x in v
+        ]
+
+        if len(ns) == 0:
+            return "No way to balance this equation."
+        elif len(ns) == 1:
+            output = ""
+            for i, item in enumerate(left_counts):
+                m, c = item
+                if coefficients[i] == 1:
+                    output += m
+                else:
+                    output += str(coefficients[i]) + m
+                if i < len(left_counts) - 1:
+                    output += " + "
+            output += " -> "
+            for i, item in enumerate(right_counts):
+                m, c = item
+                j = i + len(left_counts)
+                if coefficients[j] == 1:
+                    output += m 
+                else:
+                    output += str(coefficients[j]) + m
+                if i < len(right_counts) - 1:
+                    output += " + "
+            return output
+        else:
+            print("What happened here?")
+            print(matrix)
+            print(ns)
+            return "Too many vectors in the nullspace"
 sol = Solution()
-#print(sol.balance('C2H5OH + O2 -> CO2 + H2O'))
+# Bad
+print(sol.balance('C2H5OH + O2 -> CO2 + H2O'))
+# Good
 print(sol.balance('H2O + O2 -> H2O2'))
+print(sol.balance("C3H8+O2->CO2+H2O"))
+#from organic chemistry tutor
+print(sol.balance("Na3PO4 + CaCl2 -> Ca3(PO4)2 + NaCl"))
