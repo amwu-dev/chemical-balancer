@@ -22,66 +22,6 @@ class Solution:
                 'Es', 'Fm', 'Md', 'No', 'Lr')
 
 
-
-    def to_integer_coefficients(self, vector, max_denominator=1000):
-        """
-        Convert a vector of floating-point numbers into the smallest
-        integer ratio by approximating each value as a fraction.
-
-        Example:
-            [0.5, 0.25, 0.75] -> [2, 1, 3]
-
-        Args:
-            vector: Iterable of numbers.
-            max_denominator: Maximum denominator used when approximating
-                            floating-point values as fractions.
-
-        Returns:
-            A list of integers with the same ratio as the input.
-        """
-
-        # Convert decimals to fractions
-        fractions = [
-            Fraction(float(x)).limit_denominator(max_denominator)
-            for x in vector
-        ]
-
-        # Find the least common multiple of all denominators
-        def lcm(a, b):
-            return abs(a * b) // gcd(a, b)
-
-        common_denominator = reduce(
-            lcm,
-            (f.denominator for f in fractions),
-            1
-        )
-
-        # Multiply every fraction by the common denominator
-        integers = [
-            f.numerator * (common_denominator // f.denominator)
-            for f in fractions
-        ]
-
-        # Reduce by the greatest common divisor
-        common_factor = reduce(
-            gcd,
-            (abs(x) for x in integers if x != 0)
-        )
-
-        integers = [
-            x // common_factor
-            for x in integers
-        ]
-
-        # Make the first nonzero coefficient positive
-        for x in integers:
-            if x != 0:
-                if x < 0:
-                    integers = [-x for x in integers]
-                break
-
-        return integers
-
     def multiply(self, d, m):
         for k in d.keys():
             d[k] *= m
@@ -106,7 +46,6 @@ class Solution:
         return output, i
 
         
-
     def helper(self, formula:str, i:str):
         atoms = {}
         while i < len(formula):
@@ -174,8 +113,6 @@ class Solution:
     def balance(self, formula: str) -> str:
         formula = formula.replace(" ", "")
         left, right = formula.split("->")
-        old_left = left
-        old_right = right
         left = left.split("+")
         right = right.split("+")
         total_molecules = len(right) + len(left)
@@ -218,7 +155,7 @@ class Solution:
 
         if len(ns) == 0:
             return "No way to balance this equation."
-        elif len(ns) == 1:
+        else:
             output = ""
             for i, item in enumerate(left_counts):
                 m, c = item
@@ -239,11 +176,6 @@ class Solution:
                 if i < len(right_counts) - 1:
                     output += " + "
             return output
-        else:
-            print("What happened here?")
-            print(matrix)
-            print(ns)
-            return "Too many vectors in the nullspace"
 sol = Solution()
 # Bad
 #print(sol.balance('C2H5OH + O2 -> CO2 + H2O'))
